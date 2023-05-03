@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "765368906144",
+    "project_id": "school-dashboard-1fcd0",
+    "storage_bucket": "school-dashboard-1fcd0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765368906144:android:c311095aaa57aae82374c5",
+        "android_client_info": {
+          "package_name": "com.flutter.school_dashboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "765368906144-kogmmrmtqch68tdh9l88rqa76so7ll5i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu5_-meQwj4ETgQMnOL4ZHOCHBFxK1B20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "765368906144-kogmmrmtqch68tdh9l88rqa76so7ll5i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
