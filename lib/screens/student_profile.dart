@@ -1,5 +1,3 @@
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,102 +27,30 @@ class _StudentProfileState extends State<StudentProfile> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
-  late double currentBalance = 0.0;
-
-
-  Future<double> _getBalance(String documentId) async {
-    try {
-      DocumentSnapshot snapshot = await fireStore.collection('students')
-          .doc(documentId)
-          .get();
-      if (snapshot.exists) {
-        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
-        // var res = data['balance']?.toString();
-        // console.log(res!);
-        return data['balance'];
-      } else {
-        return 0.0;
-      }
-    } catch (e) {
-      print('Error getting field value: $e');
-      return 0.0;
-    }
-  }
-
-  void setBalance() async {
-    double newBalance = await _getBalance(widget.studentID);
-    setState(() {
-      currentBalance = newBalance;
-    });
-    console.log(newBalance.toString());
-  }
-
-// _getBalance() async {
-//     var db = FirebaseFirestore.instance;
-//     await db.collection('students').doc('CF4FyvnsEVFg6bZ7PylW').get().then((DocumentSnapshot doc) {
-//       currentBalance = doc["balance"];
-//       console.log(currentBalance.toString());
-//     });
-//  }
-
-
-  // void getFieldValue() async {
-  //
-  //   var result = await FirebaseFirestore.instance
-  //       .collection("students")
-  //       .where("studentID", isEqualTo: widget.studentID)
-  //       .snapshots();
-  //   console.log(result.toString());
-  // }
-
-
-  // getFieldValue() async {
-  //   DatabaseReference ref = FirebaseDatabase.instance.ref("students");
-  //
-  //   DatabaseEvent event = await ref.once();
-  //   console.log(event.snapshot.value.toString());
-  //
-  //   final QuerySnapshot snapshot = await studentsCollection.where('studentID', isEqualTo: widget.studentID).get();
-  //
-  //   final DocumentSnapshot documentSnapshot = snapshot.docs;
-  //   console.log('test');
-  //   console.log('test2');
-  //   return documentSnapshot.get('balance');
-  //}
-
-  //Future<double>_getBalance() async {
-    // var collection = FirebaseFirestore.instance.collection('students').snapshots();
-    // // collection.doc(widget.studentID).snapshots().listen((event) {
-    // //   if (event.exists) {
-    // //     Map<String, dynamic> data = event.data()!;
-    // //     currentBalance = data['balance'];
-    // //     name = data['name'];
-    // //
-    // //   }
-    // //
-    // // });
-    //
-    // var docSnapshot = await collection.doc(widget.studentID).get();
-    // if (docSnapshot.exists) {
-    //   Map<String, dynamic>? data = docSnapshot.data();
-    //   currentBalance = data?['balance'];
-    // }
-    //
-    // console.log(currentBalance.toString());
-    // return currentBalance;
-
-
-  //}
+  late int currentBalance = 0;
 
   @override
   void initState() {
     super.initState();
+    _getBalance(widget.studentID);
+  }
+
+  Future<void> _getBalance(String documentId) async {
+    try {
+      DocumentSnapshot snapshot = await fireStore.collection('students').doc(documentId).get();
+      if (snapshot.exists) {
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+        setState(() {
+          currentBalance = data['balance'];
+        });
+      }
+    } catch (e) {
+      print('Error getting field value: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
-    //var bal = await _getBalance(widget.studentID);
     List studentSplitName = widget.studentName.split(' ');
     return Scaffold(
       appBar: AppBar(
@@ -178,11 +104,13 @@ class _StudentProfileState extends State<StudentProfile> {
                     ),
                   ],
                 ),
+                const SizedBox(width: 20.0),
+                // Add UI for balance
               ],
             ),
             const SizedBox(height: 20.0),
             Text(
-              'Balance: 17,000',
+              'Balance: $currentBalance',
               style: TextStyle(
                 fontSize: 14.0,
                 color: Colors.grey[600],
@@ -284,17 +212,22 @@ class _StudentProfileState extends State<StudentProfile> {
                   ElevatedButton(
                     onPressed: () {
                       final paymentDescription = descriptionController.text;
-                      final paymentAmount = double.parse(amountController.text);
+                      final paymentAmount = int.parse(amountController.text);
                       final studentID = widget.studentID;
-                      final balance = 100000 - paymentAmount;
+                      final balance = currentBalance - paymentAmount;
 
-                      // setState(() {
-                      //   _makePayment(paymentDescription: paymentDescription, paymentAmount: paymentAmount, studentID: studentID);
-                      //   _updateBalance(balance: balance);
-                      // });
+                      setState(() {
+                        _makePayment(
+                            paymentDescription: paymentDescription, paymentAmount: paymentAmount, studentID: studentID);
+                        _updateBalance(balance: balance);
+                        _getBalance(widget.studentID);
+                      });
 
                       Navigator.of(context, rootNavigator: true).pop();
                     },
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.pink[200],
+                    ),
                     child: const Text('Save'),
                   ),
                 ],
@@ -313,7 +246,7 @@ class _StudentProfileState extends State<StudentProfile> {
   }
 
   Future _makePayment(
-      {required String paymentDescription, required double paymentAmount, required String studentID}) async {
+      {required String paymentDescription, required int paymentAmount, required String studentID}) async {
     DocumentReference docRef = await FirebaseFirestore.instance.collection('payments').add(
       {
         'paymentDescription': paymentDescription,
@@ -328,7 +261,7 @@ class _StudentProfileState extends State<StudentProfile> {
     _clearAll();
   }
 
-  Future _updateBalance({required double balance}) async {
+  Future _updateBalance({required int balance}) async {
     var collection = FirebaseFirestore.instance.collection('students');
     collection.doc(widget.studentID).update({'balance': balance});
   }
