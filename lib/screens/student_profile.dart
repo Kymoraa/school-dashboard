@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:school_dashboard/themes/text_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:developer' as console;
 
 class StudentProfile extends StatefulWidget {
@@ -28,11 +27,13 @@ class _StudentProfileState extends State<StudentProfile> {
   final TextEditingController amountController = TextEditingController();
   final FirebaseFirestore fireStore = FirebaseFirestore.instance;
   late int currentBalance = 0;
+  late List payments = [];
 
   @override
   void initState() {
     super.initState();
     _getBalance(widget.studentID);
+    _getPayments(widget.studentID);
   }
 
   Future<void> _getBalance(String documentId) async {
@@ -49,8 +50,18 @@ class _StudentProfileState extends State<StudentProfile> {
     }
   }
 
+  Future<List<dynamic>> _getPayments(String documentId) async {
+    CollectionReference collReference = FirebaseFirestore.instance.collection('payments');
+    QuerySnapshot querySnapshot = await collReference.where('studentID', isEqualTo: widget.studentID).get();
+    for (QueryDocumentSnapshot querySnapshot in querySnapshot.docs) {
+      payments.add(querySnapshot.data());
+    }
+    return payments;
+  }
+
   @override
   Widget build(BuildContext context) {
+    console.log(payments.toString());
     List studentSplitName = widget.studentName.split(' ');
     return Scaffold(
       appBar: AppBar(
@@ -73,49 +84,121 @@ class _StudentProfileState extends State<StudentProfile> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 40.0,
-                  backgroundColor: Colors.blue[200],
-                  child: Text(
-                    '${studentSplitName[0][0]}${studentSplitName[1][0]}',
-                    style: const TextStyle(fontSize: 24.0, color: Colors.white),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40.0,
+                    backgroundColor: Colors.blue[200],
+                    child: Text(
+                      '${studentSplitName[0][0]}${studentSplitName[1][0]}',
+                      style: const TextStyle(fontSize: 24.0, color: Colors.white),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 20.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16.0),
-                    Text(
-                      widget.studentName,
-                      style: const TextStyle(
-                        fontSize: 18.0,
+                  const SizedBox(width: 20.0),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16.0),
+                      Text(
+                        widget.studentName,
+                        style: GoogleFonts.montserrat(
+                          textStyle: Theme.of(context).textTheme.headline5,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      widget.studentReg,
-                      style: TextStyle(
-                        fontSize: 14.0,
-                        color: Colors.grey[600],
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Registration: ${widget.studentReg}',
+                        style: GoogleFonts.montserrat(
+                          textStyle: Theme.of(context).textTheme.headline5,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w300,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20.0),
-                // Add UI for balance
-              ],
-            ),
-            const SizedBox(height: 20.0),
-            Text(
-              'Balance: $currentBalance',
-              style: TextStyle(
-                fontSize: 14.0,
-                color: Colors.grey[600],
+                      const SizedBox(height: 8.0),
+                      Text(
+                        'Grade: ${widget.studentGrade}',
+                        style: GoogleFonts.montserrat(
+                          textStyle: Theme.of(context).textTheme.headline5,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 20.0),
+                  // Add UI for balance
+                ],
               ),
             ),
+            const SizedBox(height: 20.0),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(
+                'Balance: $currentBalance',
+                style: GoogleFonts.montserrat(
+                  textStyle: Theme.of(context).textTheme.headline5,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Payment History',
+                    style: GoogleFonts.montserrat(
+                      textStyle: Theme.of(context).textTheme.headline5,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const Icon(CupertinoIcons.line_horizontal_3_decrease)
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: payments.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No payments to display',
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: payments.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                              'Description: ${payments[index]['paymentDescription'].toString()}',
+                              style: GoogleFonts.montserrat(
+                                textStyle: Theme.of(context).textTheme.headline5,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Amount: ${payments[index]['paymentAmount'].toString()}',
+                              style: GoogleFonts.montserrat(
+                                textStyle: Theme.of(context).textTheme.headline5,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            )
           ],
         ),
       ),
@@ -221,6 +304,7 @@ class _StudentProfileState extends State<StudentProfile> {
                             paymentDescription: paymentDescription, paymentAmount: paymentAmount, studentID: studentID);
                         _updateBalance(balance: balance);
                         _getBalance(widget.studentID);
+                        _getPayments(widget.studentID);
                       });
 
                       Navigator.of(context, rootNavigator: true).pop();
