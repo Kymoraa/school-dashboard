@@ -64,6 +64,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
                         ),
                       ),
                     );
+                    setState(() {
+
+                    });
                   },
                   child: Card(
                     child: ListTile(
