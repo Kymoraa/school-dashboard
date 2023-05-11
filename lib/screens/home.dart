@@ -1,11 +1,11 @@
 import 'dart:math';
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:school_dashboard/screens/login.dart';
 import 'package:school_dashboard/screens/students.dart';
 import 'package:school_dashboard/screens/configure.dart';
+import 'dart:developer' as console;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,11 +15,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List menuList = [
+  late int studentsCount = 0;
+
+  Future<int> _getTotalStudents() async { // error return value
+    CollectionReference collReference = FirebaseFirestore.instance.collection('students');
+    QuerySnapshot querySnapshot = await collReference.get();
+    for (QueryDocumentSnapshot querySnapshot in querySnapshot.docs) {
+      var students = [];
+      students.add(querySnapshot.data());
+      studentsCount = students.length;
+      console.log(students.length.toString());
+    }
+    return studentsCount;
+  }
+
+  late List menuList = [
     {
       "icon": Icons.people_alt_outlined,
       "title": "Students",
-      "item_count": 127,
+      "item_count": studentsCount,
       "description": "Total students",
       "color": Colors.blue[200]
     },
@@ -67,7 +81,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _getTotalStudents();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    console.log(studentsCount.toString());
     return WillPopScope(
       onWillPop: () async {
         showDialog(
