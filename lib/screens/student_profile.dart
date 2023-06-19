@@ -182,7 +182,7 @@ class _StudentProfileState extends State<StudentProfile> {
                         shrinkWrap: true,
                         itemCount: payments.length,
                         itemBuilder: (context, index) {
-                          final timeStamp = DateTime.fromMillisecondsSinceEpoch(payments[index]['timestamp']~/1000);
+                          final timeStamp = DateTime.fromMillisecondsSinceEpoch(payments[index]['timestamp'] ~/ 1000);
                           var paymentDateTime = DateFormat('dd-MM-yyyy, hh:mm a').format(timeStamp);
                           return Container(
                             child: Column(
@@ -220,30 +220,18 @@ class _StudentProfileState extends State<StudentProfile> {
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
-                                const SizedBox(height: 10,),
-                                const Divider(height: 5.0,),
-                                const SizedBox(height: 10,)
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                const Divider(
+                                  height: 5.0,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                )
                               ],
                             ),
                           );
-                          // return ListTile(
-                          //   title: Text(
-                          //     'Particulars: ${payments[index]['paymentDescription'].toString()}',
-                          //     style: GoogleFonts.montserrat(
-                          //       textStyle: Theme.of(context).textTheme.headline5,
-                          //       fontSize: 15,
-                          //       fontWeight: FontWeight.w400,
-                          //     ),
-                          //   ),
-                          //   subtitle: Text(
-                          //     'Amount: ${payments[index]['paymentAmount'].toString()}',
-                          //     style: GoogleFonts.montserrat(
-                          //       textStyle: Theme.of(context).textTheme.headline5,
-                          //       fontSize: 13,
-                          //       fontWeight: FontWeight.w400,
-                          //     ),
-                          //   ),
-                          // );
                         },
                       ),
               ),

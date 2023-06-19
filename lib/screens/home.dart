@@ -7,6 +7,8 @@ import 'package:school_dashboard/screens/students.dart';
 import 'package:school_dashboard/screens/configure.dart';
 import 'dart:developer' as console;
 
+import 'package:school_dashboard/utils/dashboard.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -16,63 +18,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late int studentsCount = 0;
+  List dashboardList = Dashboard.dashboardList;
 
-  Future<int> _getTotalStudents() async { // error return value
-    CollectionReference collReference = FirebaseFirestore.instance.collection('students');
-    QuerySnapshot querySnapshot = await collReference.get();
-    for (QueryDocumentSnapshot querySnapshot in querySnapshot.docs) {
-      var students = [];
-      students.add(querySnapshot.data());
-      studentsCount = students.length;
-      console.log(students.length.toString());
-    }
-    return studentsCount;
+  @override
+  void initState() {
+    super.initState();
+    _getTotalStudents();
   }
 
-  late List menuList = [
-    {
-      "icon": Icons.people_alt_outlined,
-      "title": "Students",
-      "item_count": studentsCount,
-      "description": "Total students",
-      "color": Colors.blue[200]
-    },
-    {
-      "icon": Icons.tune,
-      "title": "Configure",
-      "item_count": 03,
-      "description": "Configuration(s)",
-      "color": Colors.red[200]
-    },
-    {
-      "icon": Icons.library_books_outlined,
-      "title": "Reports",
-      "item_count": 05,
-      "description": "Available report(s)",
-      "color": Colors.purple[200]
-    },
-    {
-      "icon": Icons.people_alt_outlined,
-      "title": "Teachers",
-      "item_count": 24,
-      "description": "Active teachers",
-      "color": Colors.orange[200]
-    },
-    {
-      "icon": Icons.calendar_today_outlined,
-      "title": "Calendar",
-      "item_count": 17,
-      "description": "Schedule(s)",
-      "color": Colors.pink[200]
-    },
-    {
-      "icon": Icons.mail_outline_rounded,
-      "title": "Mail",
-      "item_count": 07,
-      "description": "Message(s)",
-      "color": Colors.green[200]
-    }
-  ];
+  Future<int> _getTotalStudents() async {
+    final studentsSnapshot = await FirebaseFirestore.instance.collection('students').get();
+    studentsCount = studentsSnapshot.size;
+    return studentsCount;
+  }
 
   double getRandom(int min, int max) {
     Random random;
@@ -81,14 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _getTotalStudents();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    console.log(studentsCount.toString());
     return WillPopScope(
       onWillPop: () async {
         showDialog(
@@ -152,23 +103,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       spacing: 16,
                       runSpacing: 16,
                       children: List.generate(
-                        menuList.length,
+                        dashboardList.length,
                         (index) {
-                          var item = menuList[index];
+                          var item = dashboardList[index];
                           var size = (constraint.biggest.width - 16) / 2;
                           return InkWell(
-                           onTap: (){
-                             switch(index) {
-                               case 0:
-                                 Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentsScreen()));
-                                 break;
-                               case 1:
-                                 Navigator.push(context, MaterialPageRoute(builder: (context) => const ConfigurationScreen()));
-                                 break;
-                               default:
-                               // Do nothing.
-                             }
-                           },
+                            onTap: () {
+                              switch (index) {
+                                case 0:
+                                  Navigator.push(
+                                      context, MaterialPageRoute(builder: (context) => const StudentsScreen()));
+                                  break;
+                                case 1:
+                                  Navigator.push(
+                                      context, MaterialPageRoute(builder: (context) => const ConfigurationScreen()));
+                                  break;
+                                default:
+                                // Do nothing.
+                              }
+                            },
                             child: Container(
                               height: size * 1.2,
                               width: size,
