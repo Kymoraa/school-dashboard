@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:school_dashboard/screens/student_profile.dart';
 import 'package:school_dashboard/themes/text_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:developer' as console;
+//import 'dart:developer' as console;
 
 class StudentsScreen extends StatefulWidget {
   const StudentsScreen({Key? key}) : super(key: key);

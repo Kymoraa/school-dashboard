@@ -40,6 +40,8 @@ dependencies:
   dropdown_button2: ^2.1.0
   flutter_svg: ^2.0.5
   intl: ^0.17.0
+  pdf: ^3.10.1
+  printing: ^5.11.0
 
 dev_dependencies:
   flutter_test:

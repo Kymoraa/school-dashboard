@@ -3,9 +3,14 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:developer' as console;
-
+import 'package:flutter_svg/svg.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
+import '../widgets/save_pdf.dart';
+
+//import 'dart:developer' as console;
 
 class StudentProfile extends StatefulWidget {
   const StudentProfile({
@@ -74,14 +79,28 @@ class _StudentProfileState extends State<StudentProfile> {
         automaticallyImplyLeading: true,
         elevation: 0.7,
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              size: 24.0,
-              color: Colors.grey[600],
-            ),
-            onPressed: () async {},
-          ),
+          PopupMenuButton(itemBuilder: (context) {
+            return [
+              PopupMenuItem(
+                value: 'edit',
+                child: const Text(
+                  'Edit Student',
+                  style: TextStyle(fontSize: 13.0),
+                ),
+                onTap: () {},
+              ),
+              PopupMenuItem(
+                value: 'payment',
+                child: const Text(
+                  'Add Payment',
+                  style: TextStyle(fontSize: 13.0),
+                ),
+                onTap: () async {
+                  showPaymentDialog(context);
+                },
+              ),
+            ];
+          })
         ],
       ),
       body: Padding(
@@ -165,7 +184,6 @@ class _StudentProfileState extends State<StudentProfile> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const Icon(CupertinoIcons.line_horizontal_3_decrease)
                 ],
               ),
             ),
@@ -239,13 +257,11 @@ class _StudentProfileState extends State<StudentProfile> {
           ],
         ),
       ),
-      floatingActionButton: _paymentFAB(),
+      floatingActionButton: _downloadFAB(),
     );
   }
 
-  Widget _paymentFAB() {
-    var width = MediaQuery.of(context).size.width;
-    var height = MediaQuery.of(context).size.height;
+  Widget _downloadFAB() {
     return TweenAnimationBuilder<Offset>(
       duration: const Duration(seconds: 2),
       tween: Tween<Offset>(
@@ -261,165 +277,12 @@ class _StudentProfileState extends State<StudentProfile> {
       },
       child: FloatingActionButton(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(
-                  'Make Payment',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                content: SizedBox(
-                  height: height * 0.35,
-                  width: width,
-                  child: Form(
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Icon(CupertinoIcons.creditcard, color: Colors.grey[600]),
-                            const SizedBox(width: 15.0),
-                            Expanded(
-                              child: DropdownButtonFormField2(
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                                isExpanded: true,
-                                hint: const Text(
-                                  'Payment method',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                buttonStyleData: ButtonStyleData(
-                                  height: 58,
-                                  padding: const EdgeInsets.only(left: 5, right: 10),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                                items: paymentMethod
-                                    .map(
-                                      (item) => DropdownMenuItem<String>(
-                                        value: item,
-                                        child: Text(
-                                          item,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (String? value) => setState(
-                                  () {
-                                    if (value != null) selectedValue = value;
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        TextFormField(
-                          controller: amountController,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(fontSize: 14),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 20,
-                            ),
-                            hintText: 'Amount',
-                            hintStyle: const TextStyle(fontSize: 14),
-                            icon: Icon(CupertinoIcons.number, color: Colors.grey[600]),
-                            //icon: SvgPicture.asset('assets/icons/shilling.svg', width: 29, height: 29),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        TextFormField(
-                          controller: descriptionController,
-                          maxLines: null,
-                          keyboardType: TextInputType.multiline,
-                          style: const TextStyle(fontSize: 14),
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 20,
-                            ),
-                            hintText: 'Particulars',
-                            hintStyle: const TextStyle(fontSize: 14),
-                            icon: Icon(
-                              CupertinoIcons.text_alignleft,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: Colors.grey,
-                    ),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      final paymentDescription = descriptionController.text;
-                      final paymentAmount = int.parse(amountController.text);
-                      final studentID = widget.studentID;
-                      final balance = currentBalance - paymentAmount;
-                      final timestamp = DateTime.now().microsecondsSinceEpoch;
-                      final paymentMethod = selectedValue;
-
-                      setState(() {
-                        _makePayment(
-                          paymentDescription: paymentDescription,
-                          paymentAmount: paymentAmount,
-                          studentID: studentID,
-                          timestamp: timestamp,
-                          paymentMethod: paymentMethod,
-                        );
-                        _updateBalance(balance: balance);
-                        _getBalance(widget.studentID);
-                        _getPayments(widget.studentID);
-                      });
-
-                      Navigator.of(context, rootNavigator: true).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: Colors.pink[200],
-                    ),
-                    child: const Text('Save'),
-                  ),
-                ],
-              );
-            },
-          );
+          showDownloadDialog(context);
         },
         backgroundColor: Colors.pink[200],
-        child: Icon(
-          Icons.add,
+        child: const Icon(
+          CupertinoIcons.tray_arrow_down,
           color: Colors.white,
-          size: width * 0.08,
         ),
       ),
     );
@@ -454,5 +317,221 @@ class _StudentProfileState extends State<StudentProfile> {
   void _clearAll() {
     descriptionController.text = '';
     amountController.text = '';
+  }
+
+  void showDownloadDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Download As',
+            style: GoogleFonts.montserrat(
+              textStyle: Theme.of(context).textTheme.headline5,
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                onPressed: () {},
+                icon: SvgPicture.asset('assets/icons/excel.svg'),
+                iconSize: 50,
+              ),
+              IconButton(
+                onPressed: () {
+                  generateAndSavePDF();
+                  Navigator.of(context).pop();
+                },
+                icon: SvgPicture.asset('assets/icons/pdf.svg'),
+                iconSize: 50,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> generateAndSavePDF() async {
+    final image = await imageFromAssetBundle('assets/logos/image-1.png');
+    final doc = pw.Document();
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return buildSavePDF(
+            image,
+            widget.studentName,
+            widget.studentReg,
+            widget.studentGrade,
+            currentBalance,
+            payments,
+          );
+        },
+      ),
+    );
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => doc.save());
+  }
+
+  showPaymentDialog(BuildContext context) {
+    var width = MediaQuery.of(context).size.width;
+    var height = MediaQuery.of(context).size.height;
+    Future.delayed(Duration.zero, () {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              'Make Payment',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.0,
+                color: Colors.grey[600],
+              ),
+            ),
+            content: SizedBox(
+              height: height * 0.35,
+              width: width,
+              child: Form(
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Icon(CupertinoIcons.creditcard, color: Colors.grey[600]),
+                        const SizedBox(width: 15.0),
+                        Expanded(
+                          child: DropdownButtonFormField2(
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            isExpanded: true,
+                            hint: const Text(
+                              'Payment method',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            buttonStyleData: ButtonStyleData(
+                              height: 58,
+                              padding: const EdgeInsets.only(left: 5, right: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            items: paymentMethod
+                                .map(
+                                  (item) => DropdownMenuItem<String>(
+                                    value: item,
+                                    child: Text(
+                                      item,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (String? value) => setState(
+                              () {
+                                if (value != null) selectedValue = value;
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        hintText: 'Amount',
+                        hintStyle: const TextStyle(fontSize: 14),
+                        icon: Icon(CupertinoIcons.number, color: Colors.grey[600]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      controller: descriptionController,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                      style: const TextStyle(fontSize: 14),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        hintText: 'Particulars',
+                        hintStyle: const TextStyle(fontSize: 14),
+                        icon: Icon(
+                          CupertinoIcons.text_alignleft,
+                          color: Colors.grey[600],
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.grey,
+                ),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final paymentDescription = descriptionController.text;
+                  final paymentAmount = int.parse(amountController.text);
+                  final studentID = widget.studentID;
+                  final balance = currentBalance - paymentAmount;
+                  final timestamp = DateTime.now().microsecondsSinceEpoch;
+                  final paymentMethod = selectedValue;
+
+                  setState(() {
+                    _makePayment(
+                      paymentDescription: paymentDescription,
+                      paymentAmount: paymentAmount,
+                      studentID: studentID,
+                      timestamp: timestamp,
+                      paymentMethod: paymentMethod,
+                    );
+                    _updateBalance(balance: balance);
+                    _getBalance(widget.studentID);
+                    _getPayments(widget.studentID);
+                  });
+
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.pink[200],
+                ),
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 }

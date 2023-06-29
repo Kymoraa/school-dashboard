@@ -39,9 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               showSpinner
-                  ? Column(
+                  ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         SpinKitChasingDots(
                           color: Colors.pinkAccent,
                           size: 50.0,
@@ -178,9 +178,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.pinkAccent[200],
                               borderRadius: BorderRadius.circular(15.0),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 Text(
                                   "Log In",
                                   style: TextStyle(
