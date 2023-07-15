@@ -8,3 +8,4 @@ A new Flutter project.
 Add screenshots
 
 To do: pdf and excel (added)
+To do: Edit student details
